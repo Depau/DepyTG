@@ -12,16 +12,69 @@ The main goal is to KISS — Keep It Simple, Stupid.
 
 Other than being simple, DepyTG tries to:
 
- - Have a 1:1 correspondence with Telegram's official API specs
+ - Have a 1:1 correspondence with Telegram's official API specs. The only documentation you need is Telegram's.
  - Be compatible with any *network* library you may want to use — Requests, Flask, JSON+Urllib\*, anything
  - Make sure 99.9999% of its objects are JSON-serializable
  - Provide a simple (but totally optional) API to do the network stuff
  - Heavily integrate with IDEs that support code insights by type-hinting everything that can be type-hinted
+ - Not try to reinvent the wheel. Telegram's API is quite simple, we're not going to implement simplified "send_message" methods.
  
  
  # Big note
  
  This is a work in progress! I wrote this from scratch to write my own Telegram bots. I haven't tested it very much. I'll test it as I work on them. I'll write some tests and add CI soon.
+ 
+ 
+ ### Quick intro
+ 
+ ##### Creating an object
+ 
+ - Manually
+ 
+ ```python
+ >>> types.Document(
+        file_id='doc_id',
+        file_name='ciao.pdf',
+        thumb=PhotoSize(
+                  file_id='thumb_id',
+                  width=100, 
+                  height=50
+              )
+     )
+  Document({'file_id': 'doc_id', 'thumb': PhotoSize({'file_id': 'thumb_id', 'width': 100, 'height': 50}), 'file_name': 'ciao.pdf'})
+ ```
+ 
+ - From dict/JSON
+ ```python
+ >>> types.Document.from_json({'file_id': 'doc_id',
+ 'file_name': 'ciao.pdf', 'thumb': {'file_id': 'thumb_id', 'height': 50, 'width': 100}})
+ Document({'file_id': 'doc_id', 'thumb': PhotoSize({'file_id': 'thumb_id', 'width': 100, 'height': 50}), 'file_name': 'ciao.pdf'})
+ ```
+ 
+ #### Calling methods
+ 
+ Methods are regular Python objects. "Call" them once to generate the parameters' dictionary, then twice (passing the API token) to actually send the request.
+ 
+ - With the built-in API
+ ```python
+ >>> methods.setWebhook("https://my.super.webhook.com")("my_bot_token")
+ True
+ >>> methods.getWebhookInfo()("my_bot_token")
+WebhookInfo({'url': 'https://my.super.webhook.com', 'has_custom_certificate': False, 'pending_update_count': 0})
+ ```
+ 
+ - With an external library
+ ```python
+ >>> method = methods.setWebhook("https://my.super.webhook.com")
+ >>> r = requests.post("https://api.telegram.org/botmy_bot_token/setWebhook", json=method)
+ >>> method.read_result(r.json())
+ True
+ 
+ >>> r = requests.get("https://api.telegram.org/botmy_bot_token/getWebhookInfo")
+ >>> methods.getWebhookInfo.read_result(r.json())
+ WebhookInfo({'url': 'https://my.super.webhook.com', 'has_custom_certificate': False, 'pending_update_count': 0})
+ ```
+ 
  
  
  ### Possible questions
