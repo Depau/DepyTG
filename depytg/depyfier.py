@@ -57,11 +57,8 @@ def depyfy(obj: Any, otype: Union[type, GenericMeta]) -> Any:
     :param otype: The expected type for the object
     :return: The converted object
     """
-    print("depyfy")
-    print(issubclass(otype.__class__, Sequence), otype.__class__, Sequence, Sequence.__class__)
 
     if is_sequence(otype):
-        print("seq")
         return depyfy_sequence(obj, otype)
     elif is_mapping(otype):
         return depyfy_mapping(obj, otype)
@@ -164,6 +161,7 @@ def depyfy_union(obj: Any, union: GenericMeta) -> Any:
             try:
                 return depyfy_tobject(obj, t)
             except Exception:
+                import traceback
                 import traceback
                 traceback.print_exc()
 
