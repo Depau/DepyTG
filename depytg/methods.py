@@ -32,7 +32,7 @@ class getUpdates(TelegramMethodBase):
 
     ReturnType = Sequence[Update]
 
-    def __init__(self, offset: int,
+    def __init__(self, offset: int = None,
                  limit: int = None,
                  timeout: int = None,
                  allowed_updates: Sequence[str] = None):
@@ -112,7 +112,7 @@ class sendMessage(TelegramMethodBase):
 
     ReturnType = Message
 
-    def __init__(self, chat_id: 'Integer or String',
+    def __init__(self, chat_id: Union[int, str],
                  text: str,
                  parse_mode: str = None,
                  disable_web_page_preview: bool = None,
@@ -1336,7 +1336,7 @@ class answerInlineQuery(TelegramMethodBase):
     ReturnType = bool
 
     def __init__(self, inline_query_id: str,
-                 results: 'Array of InlineQueryResult',
+                 results: Sequence[InlineQueryResult],
                  cache_time: int = None,
                  is_personal: bool = None,
                  next_offset: str = None,
@@ -1394,7 +1394,7 @@ class sendInvoice(TelegramMethodBase):
                  provider_token: str,
                  start_parameter: str,
                  currency: str,
-                 prices: 'Array of LabeledPrice',
+                 prices: Sequence[LabeledPrice],
                  photo_url: str = None,
                  photo_size: int = None,
                  photo_width: int = None,
