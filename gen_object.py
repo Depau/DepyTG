@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import sys, re
-from depytg._internals import shadow as fix_name
+from depytg.internals import shadow as fix_name
 
 """
 Document
@@ -26,17 +26,21 @@ type_map = {
     "Float number": "float",
     "Boolean": "bool",
     "True": "bool",
-    "False": "bool"
+    "False": "bool",
 }
 
 fix_name
 
+
 def fix_type(t):
     if t in type_map:
         return type_map[t]
+    if " or " in t:
+        return "Union[" + ", ".join([fix_type(i) for i in t.split(" or ")]) + "]"
     if " " in t:
         return "'{}'".format(t)
     return t
+
 
 def gen_docstring(docstr, fields):
     docstr = '"""\n' + docstr
@@ -45,8 +49,10 @@ def gen_docstring(docstr, fields):
         docstr += ":param {}: ({}) {}".format(fix_name(name), fix_type(type), desc)
     return docstr + '\n"""'
 
+
 def indent(string):
     return "\n".join(["    " + i for i in string.splitlines()])
+
 
 def gen_init(fields):
     args = "self, "
@@ -80,7 +86,7 @@ def gen_object(string):
             break
         i += 1
 
-    fields = fields[i+1:]
+    fields = fields[i + 1:]
 
     obj = "class {}(TelegramObjectBase):\n".format(objname)
     obj += indent(gen_docstring(docstring, fields))
@@ -89,11 +95,13 @@ def gen_object(string):
 
     return obj
 
+
 def main():
     print()
     print()
     print(gen_object(sys.stdin.read()))
     print()
+
 
 if __name__ == "__main__":
     main()
