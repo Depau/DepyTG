@@ -49,6 +49,8 @@ Other than being simple, DepyTG tries to:
  >>> types.Document.from_json({'file_id': 'doc_id',
  'file_name': 'ciao.pdf', 'thumb': {'file_id': 'thumb_id', 'height': 50, 'width': 100}})
  Document({'file_id': 'doc_id', 'thumb': PhotoSize({'file_id': 'thumb_id', 'width': 100, 'height': 50}), 'file_name': 'ciao.pdf'})
+ 
+# Notice how the type of "thumb" (PhotoSize) is automatically detected.
  ```
  
  #### Calling methods
@@ -57,6 +59,7 @@ Other than being simple, DepyTG tries to:
  
  - With the built-in API
  ```python
+ #                     ↓ Pass fields here              ↓ Pass token here 
  >>> methods.setWebhook("https://my.super.webhook.com")("my_bot_token")
  True
  >>> methods.getWebhookInfo()("my_bot_token")
@@ -65,12 +68,14 @@ WebhookInfo({'url': 'https://my.super.webhook.com', 'has_custom_certificate': Fa
  
  - With an external library
  ```python
+ #   ↓ Store to variable        ↓ Only pass fields
  >>> method = methods.setWebhook("https://my.super.webhook.com")
  >>> r = requests.post("https://api.telegram.org/botmy_bot_token/setWebhook", json=method)
  >>> method.read_result(r.json())
  True
  
  >>> r = requests.get("https://api.telegram.org/botmy_bot_token/getWebhookInfo")
+ #   ↓ "read_result" is specific for each method
  >>> methods.getWebhookInfo.read_result(r.json())
  WebhookInfo({'url': 'https://my.super.webhook.com', 'has_custom_certificate': False, 'pending_update_count': 0})
  ```
