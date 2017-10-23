@@ -15,7 +15,9 @@ def is_union(some_type: Any) -> bool:
     """
 
     # Yeah. Thanks Python.
-    return id(type(some_type)) == id(Union) or str(type(some_type)) == "typing.Union"
+    return isinstance(some_type, type(Union)) or \
+           id(type(some_type)) == id(type(Union)) or \
+           str(type(some_type)) == "typing.Union"
 
 
 def depyfy(obj: Any, otype: Union[type, GenericMeta]) -> Any:
