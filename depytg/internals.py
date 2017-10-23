@@ -7,7 +7,7 @@ from typing import TypeVar, Union, Any, Generator, Tuple, Type, Optional, overlo
 import os
 import requests
 
-from depytg.errors import NotImplementedWarning
+from depytg.errors import NotImplementedWarning, TelegramError
 
 base_url = "https://api.telegram.org/bot{token}/{method}"
 file_url = "https://api.telegram.org/file/bot{token}/{path}"
@@ -269,4 +269,10 @@ class TelegramMethodBase(TelegramObjectBase):
         else:
             r = requests.post(url, json=fields)
 
-        return depyfy(r.json(), self.ReturnType)
+        j = r.json()
+
+        if "ok" in j and j["ok"] and "result" in j:
+            return depyfy(j["result"], self.ReturnType)
+        else:
+            raise TelegramError(j.get("description", "Unknown error"),
+                                j.get("error_code", r.status_code))
