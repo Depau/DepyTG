@@ -1,3 +1,4 @@
+import collections.abc
 import warnings
 
 from depytg.errors import NotImplementedWarning
@@ -6,7 +7,7 @@ from depytg.types import *
 from typing import GenericMeta, Sequence, Mapping, _ForwardRef, Union, Any
 
 
-def is_union(some_type: Any) -> bool:
+def is_union(some_type: type(Union)) -> bool:
     """
     Apparently there's no way to know if some type is a Union other than checking
     the memory location of its type. Thanks Python <3
@@ -18,6 +19,29 @@ def is_union(some_type: Any) -> bool:
     return isinstance(some_type, type(Union)) or \
            id(type(some_type)) == id(type(Union)) or \
            str(type(some_type)) == "typing.Union"
+
+
+def is_sequence(some_type: GenericMeta) -> bool:
+    if "__extra__" in dir(some_type):
+        return some_type.__extra__ == collections.abc.Sequence
+    return False
+
+
+def is_mapping(some_type: GenericMeta) -> bool:
+    if "__extra__" in dir(some_type):
+        return some_type.__extra__ == collections.abc.Mapping
+    return False
+
+
+def is_tobject(some_type: type) -> bool:
+    return ((
+                type(some_type) == type and
+                issubclass(some_type, TelegramObjectBase)
+            ) or isinstance(some_type, TelegramObjectBase))
+
+
+def is_forwardref(some_type: GenericMeta) -> bool:
+    return isinstance(some_type, _ForwardRef)
 
 
 def depyfy(obj: Any, otype: Union[type, GenericMeta]) -> Any:
@@ -33,15 +57,17 @@ def depyfy(obj: Any, otype: Union[type, GenericMeta]) -> Any:
     :param otype: The expected type for the object
     :return: The converted object
     """
+    print("depyfy")
+    print(issubclass(otype.__class__, Sequence), otype.__class__, Sequence, Sequence.__class__)
 
-    if isinstance(otype, Sequence):
+    if is_sequence(otype):
+        print("seq")
         return depyfy_sequence(obj, otype)
-    elif isinstance(otype, Mapping):
+    elif is_mapping(otype):
         return depyfy_mapping(obj, otype)
     elif is_union(otype):
         return depyfy_union(obj, otype)
-    elif (type(otype) == type and issubclass(otype, TelegramObjectBase)) or \
-            isinstance(otype, TelegramObjectBase):
+    elif is_tobject(otype):
         return depyfy_tobject(obj, otype)
     else:
         return obj
@@ -54,14 +80,13 @@ def depyfy_sequence(seq: Sequence, seq_type: GenericMeta) -> Sequence:
     if isinstance(subtype, _ForwardRef):
         warnings.warn("Not depyfying sequence whose argument is a forward reference", NotImplementedWarning)
         return seq
-    elif isinstance(subtype, Sequence):
+    elif is_sequence(subtype):
         for i in seq:
             newseq.append(depyfy_sequence(i, subtype))
-    elif isinstance(subtype, Mapping):
+    elif is_mapping(subtype):
         for i in seq:
             newseq.append(depyfy_mapping(i, subtype))
-    elif (type(subtype) == type and issubclass(subtype, TelegramObjectBase)) or \
-            isinstance(subtype, TelegramObjectBase):
+    elif is_tobject(subtype):
         for i in seq:
             newseq.append(depyfy_tobject(i, subtype))
     else:
@@ -76,8 +101,8 @@ def depyfy_mapping(mapp: Mapping, map_type: GenericMeta) -> Mapping:
     keytype, valtype = map_type.__args__
     newmap = {}
 
-    k_is_fref = isinstance(keytype, _ForwardRef)
-    v_is_fref = isinstance(valtype, _ForwardRef)
+    k_is_fref = is_forwardref(keytype)
+    v_is_fref = is_forwardref(valtype)
 
     # Skip loop if everything is a forward reference
     if k_is_fref or v_is_fref:
@@ -89,11 +114,8 @@ def depyfy_mapping(mapp: Mapping, map_type: GenericMeta) -> Mapping:
         return mapp
 
     # Skip loop if both keys and values are regular Python objects
-    if not (isinstance(keytype, GenericMeta) or
-                ((type(keytype) == type and issubclass(keytype, TelegramObjectBase)) or
-                     isinstance(keytype, TelegramObjectBase)) or
-                isinstance(valtype, GenericMeta) or
-                        type(valtype) == type and issubclass(valtype, GenericMeta)):
+    if not (isinstance(keytype, GenericMeta) or is_tobject(keytype) or
+                isinstance(valtype, GenericMeta) or is_tobject(valtype)):
         return mapp
 
     # Either key or value needs to be depyfied
@@ -102,22 +124,20 @@ def depyfy_mapping(mapp: Mapping, map_type: GenericMeta) -> Mapping:
 
         if k_is_fref:
             pass
-        elif isinstance(keytype, Sequence):
+        elif is_sequence(keytype):
             newkey = depyfy_sequence(k, keytype)
-        elif isinstance(keytype, Mapping):
+        elif is_mapping(keytype):
             newkey = depyfy_mapping(k, keytype)
-        elif (type(keytype) == type and issubclass(keytype, TelegramObjectBase)) or \
-                isinstance(keytype, TelegramObjectBase):
+        elif is_tobject(keytype):
             newkey = depyfy_tobject(k, keytype)
 
         if v_is_fref:
             pass
-        elif isinstance(valtype, Sequence):
+        elif is_sequence(valtype):
             newval = depyfy_sequence(v, valtype)
-        elif isinstance(valtype, Mapping):
+        elif is_mapping(valtype):
             newval = depyfy_mapping(v, valtype)
-        elif (type(valtype) == type and issubclass(valtype, TelegramObjectBase)) or \
-                isinstance(valtype, TelegramObjectBase):
+        elif is_tobject(valtype):
             newval = depyfy_tobject(v, valtype)
 
         newmap[newkey] = newval
@@ -135,32 +155,32 @@ def depyfy_union(obj: Any, union: GenericMeta) -> Any:
         return obj
 
     # Not a regular type, one first shot looking for TelegramObjectBase
-    if given_t == dict and Mapping not in union.__args__:
+    if given_t == dict and dict not in union.__args__:
         # Try to convert it to every TelegramObjectBase subclass specified
         # in the Union. Return the first one that succeeds
         for t in union.__args__:
-            if not (isinstance(t, TelegramObjectBase) or (type(t) == type and issubclass(t, TelegramObjectBase))):
+            if not is_tobject(t):
                 continue
             try:
                 return depyfy_tobject(obj, t)
             except Exception:
-                import traceback;
+                import traceback
                 traceback.print_exc()
 
     # Maybe it's a GenericMeta. Check for Sequence and Mapping
     for t in union.__args__:
         try:
-            if isinstance(t, Sequence):
+            if is_sequence(t):
                 return depyfy_sequence(obj, t)
         except Exception:
-            import traceback;
+            import traceback
             traceback.print_exc()
 
         try:
-            if isinstance(t, Mapping):
+            if is_mapping(t):
                 return depyfy_mapping(obj, t)
         except Exception:
-            import traceback;
+            import traceback
             traceback.print_exc()
 
     # The object is nothing we can convert. Return it with a warning
