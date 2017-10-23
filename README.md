@@ -15,13 +15,13 @@ Other than being simple, DepyTG tries to:
  - Have a 1:1 correspondence with Telegram's official API specs
  - Be compatible with any *network* library you may want to use — Requests, Flask, JSON+Urllib\*, anything
  - Make sure 99.9999% of its objects are JSON-serializable
- - Provide a simple (but totally optional) API to do the networking stuff
+ - Provide a simple (but totally optional) API to do the network stuff
  - Heavily integrate with IDEs that support code insights by type-hinting everything that can be type-hinted
  
  
  # Big note
  
- This is a work in progress! I wrote this from scratch to write my own Telegram bots. I haven't tested it very much. I'll test it as I work on them. Automatic tests are planned.
+ This is a work in progress! I wrote this from scratch to write my own Telegram bots. I haven't tested it very much. I'll test it as I work on them. I'll write some tests and add CI soon.
  
  
  ### Possible questions
