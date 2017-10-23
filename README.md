@@ -80,6 +80,13 @@ WebhookInfo({'url': 'https://my.super.webhook.com', 'has_custom_certificate': Fa
  WebhookInfo({'url': 'https://my.super.webhook.com', 'has_custom_certificate': False, 'pending_update_count': 0})
  ```
  
+ ##### Note:
+ Methods that take `InputFile` objects are a bit special. First of all, any field that takes `InputFile` is made optional, even if Telegram's API references says the opposite.
+ 
+ `InputFile` is the only object that is not JSON-serializable and as such, it needs special handling. If you use a custom HTTP library, you will need to upload the files yourself as described in Telegram's documentation.
+ 
+ The built-in requests API will handle `InputFile` objects automatically and send the fields as `multipart/form-data`. If `requests-toolbelt` is installed it will be used to stream the file.
+ 
  
  
  ### Possible questions
