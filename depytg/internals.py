@@ -230,7 +230,6 @@ class TelegramMethodBase(TelegramObjectBase):
     def __call__(self, token: str) -> ReturnType:
         # Local import to issues due to recursive imports
         # Python is smart enough to work everything out
-        from depytg.depyfier import depyfy
         from depytg.types import InputFile
         try:
             from requests_toolbelt.multipart.encoder import MultipartEncoder
@@ -270,9 +269,34 @@ class TelegramMethodBase(TelegramObjectBase):
             r = requests.post(url, json=fields)
 
         j = r.json()
+        return self.read_result(j)
+
+
+    @classmethod
+    @overload
+    def read_result(cls, j: dict) -> ReturnType:
+        pass
+
+    @classmethod
+    @overload
+    def read_result(cls, j: str) -> ReturnType:
+        pass
+
+    @classmethod
+    def read_result(cls, j) -> ReturnType:
+        """
+        Reads a result for this method (which was called externally) and converts it into a
+        DepyTG object.
+        :param j: The response JSON/dict
+        :return: A TelegramObjectBase subclass instance representing the response
+        """
+        from depytg.depyfier import depyfy
+
+        if isinstance(j, str):
+            j = json.loads(j)
 
         if "ok" in j and j["ok"] and "result" in j:
-            return depyfy(j["result"], self.ReturnType)
+            return depyfy(j["result"], cls.ReturnType)
         else:
             raise TelegramError(j.get("description", "Unknown error"),
-                                j.get("error_code", r.status_code))
+                                j.get("error_code", None))
