@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='DepyTG',
-    version='0.1',
+    version='3.6-r0',
     packages=['depytg'],
     url='https://github.com/Depaulicious/DepyTG',
     license='',
