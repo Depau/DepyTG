@@ -2197,8 +2197,11 @@ class InputFile(object):
     it as JSON. If you're sending requests manually you need to upload files yourself.
     :param file: (BinaryIO) Your input file. It must be opened in binary mode
     :param mimetype: (str) The file's mimetype
+    :param name: (str) Optional. Filename, overrides the original file name when sending the request. Useful when
+    uploading from an in-memory buffer.
     """
 
-    def __init__(self, file: BinaryIO, mimetype: str):
+    def __init__(self, file: BinaryIO, mimetype: str, name: str = None):
         self.file = file
         self.mime = mimetype
+        self.name = Name
