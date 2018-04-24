@@ -168,6 +168,8 @@ class sendPhoto(TelegramMethodBase):
     Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a photo from the Internet, or
     upload a new photo using multipart/form-data. More info on Sending Files »
     :param caption: (str) Optional. Photo caption (may also be used when resending photos by file_id), 0-200 characters
+    :param parse_mode: (str) Optional. Send Markdown or HTML, if you want Telegram apps to show bold, italic,
+    fixed-width text or inline URLs in your bot's message.
     :param disable_notification: (bool) Optional. Sends the message silently. Users will receive a notification with no
     sound.
     :param reply_to_message_id: (int) Optional. If the message is a reply, ID of the original message
@@ -181,6 +183,7 @@ class sendPhoto(TelegramMethodBase):
     def __init__(self, chat_id: Union[int, str],
                  photo: Union[InputFile, str] = None,
                  caption: str = None,
+                 parse_mode: str = None,
                  disable_notification: bool = None,
                  reply_to_message_id: int = None,
                  reply_markup: Union[
@@ -190,6 +193,7 @@ class sendPhoto(TelegramMethodBase):
         self.chat_id = chat_id
         self.photo = photo
         self.caption = caption
+        self.parse_mode = parse_mode
         self.disable_notification = disable_notification
         self.reply_to_message_id = reply_to_message_id
         self.reply_markup = reply_markup
@@ -206,6 +210,8 @@ class sendAudio(TelegramMethodBase):
     on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get an audio file from the
     Internet, or upload a new one using multipart/form-data. More info on Sending Files »
     :param caption: (str) Optional. Audio caption, 0-200 characters
+    :param parse_mode: (str) Optional. Send Markdown or HTML, if you want Telegram apps to show bold, italic,
+    fixed-width text or inline URLs in your bot's message.
     :param duration: (int) Optional. Duration of the audio in seconds
     :param performer: (str) Optional. Performer
     :param title: (str) Optional. Track name
@@ -222,6 +228,7 @@ class sendAudio(TelegramMethodBase):
     def __init__(self, chat_id: Union[int, str],
                  audio: Union[InputFile, str] = None,
                  caption: str = None,
+                 parse_mode: str = None,
                  duration: int = None,
                  performer: str = None,
                  title: str = None,
@@ -234,6 +241,7 @@ class sendAudio(TelegramMethodBase):
         self.chat_id = chat_id
         self.audio = audio
         self.caption = caption
+        self.parse_mode = parse_mode
         self.duration = duration
         self.performer = performer
         self.title = title
@@ -253,6 +261,8 @@ class sendDocument(TelegramMethodBase):
     a new one using multipart/form-data. More info on Sending Files »
     :param caption: (str) Optional. Document caption (may also be used when resending documents by file_id), 0-200
     characters
+    :param parse_mode: (str) Optional. Send Markdown or HTML, if you want Telegram apps to show bold, italic,
+    fixed-width text or inline URLs in your bot's message.
     :param disable_notification: (bool) Optional. Sends the message silently. Users will receive a notification with no
     sound.
     :param reply_to_message_id: (int) Optional. If the message is a reply, ID of the original message
@@ -266,6 +276,7 @@ class sendDocument(TelegramMethodBase):
     def __init__(self, chat_id: Union[int, str],
                  document: Union[InputFile, str] = None,
                  caption: str = None,
+                 parse_mode: str = None,
                  disable_notification: bool = None,
                  reply_to_message_id: int = None,
                  reply_markup: Union[
@@ -275,6 +286,7 @@ class sendDocument(TelegramMethodBase):
         self.chat_id = chat_id
         self.document = document
         self.caption = caption
+        self.parse_mode = parse_mode
         self.disable_notification = disable_notification
         self.reply_to_message_id = reply_to_message_id
         self.reply_markup = reply_markup
@@ -294,6 +306,8 @@ class sendVideo(TelegramMethodBase):
     :param width: (int) Optional. Video width
     :param height: (int) Optional. Video height
     :param caption: (str) Optional. Video caption (may also be used when resending videos by file_id), 0-200 characters
+    :param parse_mode: (str) Optional. Send Markdown or HTML, if you want Telegram apps to show bold, italic, fixed-width text or inline URLs in the media caption.
+    :param supports_streaming: (bool) Optional. Pass True, if the uploaded video is suitable for streaming.
     :param disable_notification: (bool) Optional. Sends the message silently. Users will receive a notification with no
     sound.
     :param reply_to_message_id: (int) Optional. If the message is a reply, ID of the original message
@@ -310,6 +324,8 @@ class sendVideo(TelegramMethodBase):
                  width: int = None,
                  height: int = None,
                  caption: str = None,
+                 parse_mode: str = None,
+                 supports_streaming: bool = None,
                  disable_notification: bool = None,
                  reply_to_message_id: int = None,
                  reply_markup: Union[
@@ -322,6 +338,8 @@ class sendVideo(TelegramMethodBase):
         self.width = width
         self.height = height
         self.caption = caption
+        self.parse_mode = parse_mode
+        self.supports_streaming = supports_streaming
         self.disable_notification = disable_notification
         self.reply_to_message_id = reply_to_message_id
         self.reply_markup = reply_markup
@@ -339,6 +357,8 @@ class sendVoice(TelegramMethodBase):
     Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a file from the Internet, or upload
     a new one using multipart/form-data. More info on Sending Files »
     :param caption: (str) Optional. Voice message caption, 0-200 characters
+    :param parse_mode: (str) Optional. Send Markdown or HTML, if you want Telegram apps to show bold, italic,
+    fixed-width text or inline URLs in your bot's message.
     :param duration: (int) Optional. Duration of the voice message in seconds
     :param disable_notification: (bool) Optional. Sends the message silently. Users will receive a notification with no
     sound.
@@ -353,6 +373,7 @@ class sendVoice(TelegramMethodBase):
     def __init__(self, chat_id: Union[int, str],
                  voice: Union[InputFile, str] = None,
                  caption: str = None,
+                 parse_mode: str = None,
                  duration: int = None,
                  disable_notification: bool = None,
                  reply_to_message_id: int = None,
@@ -363,6 +384,7 @@ class sendVoice(TelegramMethodBase):
         self.chat_id = chat_id
         self.voice = voice
         self.caption = caption
+        self.parse_mode = parse_mode
         self.duration = duration
         self.disable_notification = disable_notification
         self.reply_to_message_id = reply_to_message_id
@@ -407,6 +429,32 @@ class sendVideoNote(TelegramMethodBase):
         self.disable_notification = disable_notification
         self.reply_to_message_id = reply_to_message_id
         self.reply_markup = reply_markup
+
+
+class sendMediaGroup(TelegramMethodBase):
+    """
+    As of v.4.0, Telegram clients support rounded square mp4 videos of up to 1 minute long. Use this method to send
+    video messages. On success, the sent Message is returned.
+    :param chat_id: (Union[int, str]) Unique identifier for the target chat or username of the target channel (in the
+    format @channelusername)
+    :param media: 	(Sequence[InputMedia]) A JSON-serialized array describing photos and videos to be sent, must include 2–10 items.
+    :param disable_notification: (bool) Optional. Sends the message silently. Users will receive a notification with no
+    sound.
+    :param reply_to_message_id: (int) Optional. If the message is a reply, ID of the original message.
+    """
+
+    ReturnType = Message
+
+    def __init__(self, chat_id: Union[int, str],
+                 media: Sequence[InputMedia],
+                 disable_notification: bool = None,
+                 reply_to_message_id: int = None):
+        super().__init__()
+
+        self.chat_id = chat_id
+        self.media = media
+        self.disable_notification = disable_notification
+        self.reply_to_message_id = reply_to_message_id
 
 
 class sendLocation(TelegramMethodBase):
@@ -880,8 +928,7 @@ class pinChatMessage(TelegramMethodBase):
     """
     Use this method to pin a message in a supergroup. The bot must be an administrator in the chat for this to work and
     must have the appropriate admin rights. Returns True on success.
-    :param chat_id: (Union[int, str]) Unique identifier for the target chat or username of the target supergroup (in the
-    format @supergroupusername)
+    :param chat_id: (Union[int, str]) Unique identifier for the target chat or username of the target channel (in the format @channelusername)
     :param message_id: (int) Identifier of a message to pin
     :param disable_notification: (bool) Optional. Pass True, if it is not necessary to send a notification to all group
     members about the new pinned message
@@ -903,8 +950,7 @@ class unpinChatMessage(TelegramMethodBase):
     """
     Use this method to unpin a message in a supergroup chat. The bot must be an administrator in the chat for this to
     work and must have the appropriate admin rights. Returns True on success.
-    :param chat_id: (Union[int, str]) Unique identifier for the target chat or username of the target supergroup (in the
-    format @supergroupusername)
+    :param chat_id: (Union[int, str]) Unique identifier for the target chat or username of the target channel (in the format @channelusername)
     """
 
     ReturnType = bool
@@ -1079,6 +1125,8 @@ class editMessageCaption(TelegramMethodBase):
     :param inline_message_id: (str) Optional. Required if chat_id and message_id are not specified. Identifier of the
     inline message
     :param caption: (str) Optional. New caption of the message
+    :param parse_mode: (str) Optional. Send Markdown or HTML, if you want Telegram apps to show bold, italic,
+    fixed-width text or inline URLs in your bot's message.
     :param reply_markup: (InlineKeyboardMarkup) Optional. A JSON-serialized object for an inline keyboard.
     """
 
@@ -1088,6 +1136,7 @@ class editMessageCaption(TelegramMethodBase):
                  message_id: int = None,
                  inline_message_id: str = None,
                  caption: str = None,
+                 parse_mode: str = None,
                  reply_markup: InlineKeyboardMarkup = None):
         super().__init__()
 
@@ -1095,6 +1144,7 @@ class editMessageCaption(TelegramMethodBase):
         self.message_id = message_id
         self.inline_message_id = inline_message_id
         self.caption = caption
+        self.parse_mode = parse_mode
         self.reply_markup = reply_markup
 
 
@@ -1367,6 +1417,8 @@ class sendInvoice(TelegramMethodBase):
     :param currency: (str) Three-letter ISO 4217 currency code, see more on currencies
     :param prices: ('Array of LabeledPrice') Price breakdown, a list of components (e.g. product price, tax, discount,
     delivery cost, delivery tax, bonus, etc.)
+    :param provider_data: (str) Optional. JSON-encoded data about the invoice, which will be shared with the
+    payment provider. A detailed description of required fields should be provided by the payment provider.
     :param photo_url: (str) Optional. URL of the product photo for the invoice. Can be a photo of the goods or a
     marketing image for a service. People like it better when they see what they are paying for.
     :param photo_size: (int) Optional. Photo size
@@ -1375,8 +1427,10 @@ class sendInvoice(TelegramMethodBase):
     :param need_name: (bool) Optional. Pass True, if you require the user's full name to complete the order
     :param need_phone_number: (bool) Optional. Pass True, if you require the user's phone number to complete the order
     :param need_email: (bool) Optional. Pass True, if you require the user's email to complete the order
-    :param need_shipping_address: (bool) Optional. Pass True, if you require the user's shipping address to complete the
-    order
+    :param need_shipping_address: (bool) Optional. Pass True, if you require the user's shipping address to
+    complete the order.
+    :param send_phone_number_to_provider: (bool) Optional. Pass True, if user's phone number should be sent to provider.
+    :param send_email_to_provider: (bool) Optional. Pass True, if user's email address should be sent to provider.
     :param is_flexible: (bool) Optional. Pass True, if the final price depends on the shipping method
     :param disable_notification: (bool) Optional. Sends the message silently. Users will receive a notification with no
     sound.
@@ -1395,6 +1449,7 @@ class sendInvoice(TelegramMethodBase):
                  start_parameter: str,
                  currency: str,
                  prices: Sequence[LabeledPrice],
+                 provider_data: str = None,
                  photo_url: str = None,
                  photo_size: int = None,
                  photo_width: int = None,
@@ -1403,6 +1458,8 @@ class sendInvoice(TelegramMethodBase):
                  need_phone_number: bool = None,
                  need_email: bool = None,
                  need_shipping_address: bool = None,
+                 send_phone_number_to_provider: bool = None,
+                 send_email_to_provider: bool = None,
                  is_flexible: bool = None,
                  disable_notification: bool = None,
                  reply_to_message_id: int = None,
@@ -1417,6 +1474,7 @@ class sendInvoice(TelegramMethodBase):
         self.start_parameter = start_parameter
         self.currency = currency
         self.prices = prices
+        self.provider_data = provider_data
         self.photo_url = photo_url
         self.photo_size = photo_size
         self.photo_width = photo_width
@@ -1425,6 +1483,8 @@ class sendInvoice(TelegramMethodBase):
         self.need_phone_number = need_phone_number
         self.need_email = need_email
         self.need_shipping_address = need_shipping_address
+        self.send_phone_number_to_provider = send_phone_number_to_provider
+        self.send_email_to_provider = send_email_to_provider
         self.is_flexible = is_flexible
         self.disable_notification = disable_notification
         self.reply_to_message_id = reply_to_message_id

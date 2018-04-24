@@ -224,6 +224,7 @@ class Message(TelegramObjectBase):
     :param invoice: (Invoice) Optional. Message is an invoice for a payment, information about the invoice.
     :param successful_payment: (SuccessfulPayment) Optional. Message is a service message about a successful payment,
     information about the payment.
+    :param connected_website: (str) Optional. The domain name of the website on which the user has logged in.
     """
 
     def __init__(self, message_id: int,
@@ -265,7 +266,8 @@ class Message(TelegramObjectBase):
                  migrate_from_chat_id: int = None,
                  pinned_message: 'Message' = None,
                  invoice: 'Invoice' = None,
-                 successful_payment: 'SuccessfulPayment' = None):
+                 successful_payment: 'SuccessfulPayment' = None,
+                 connected_website: str = None):
         super().__init__()
 
         self.message_id = message_id
@@ -308,6 +310,7 @@ class Message(TelegramObjectBase):
         self.pinned_message = pinned_message
         self.invoice = invoice
         self.successful_payment = successful_payment
+        self.connected_website = connected_website
 
 
 class MessageEntity(TelegramObjectBase):
@@ -862,6 +865,79 @@ class ResponseParameters(TelegramObjectBase):
 
         self.migrate_to_chat_id = migrate_to_chat_id
         self.retry_after = retry_after
+
+
+class InputMedia(TelegramObjectBase):
+    """
+    This object represents the content of a media message to be sent. It must be one of
+
+    - InputMediaPhoto
+    - InputMediaVideo
+    """
+
+    def __init__(self):
+        if self.__class__ == InputMedia:
+            raise NotImplemented("Use subclasses: InputMediaPhoto, InputMediaVideo")
+
+        super().__init__()
+
+
+class InputMediaPhoto(InputMedia):
+    """
+    Represents a photo to be sent.
+    :param type: (str) Type of the result, must be photo
+    :param media: (str) File to send. Pass a file_id to send a file that exists on the Telegram servers (recommended),
+    pass an HTTP URL for Telegram to get a file from the Internet, or pass "attach://<file_attach_name>" to upload a new
+    one using multipart/form-data under <file_attach_name> name.
+    :param caption: (str) Optional. Caption of the photo to be sent, 0-200 characters
+    :param parse_mode: (bool) Optional. Send Markdown or HTML, if you want Telegram apps to show bold, italic,
+    fixed-width text or inline URLs in the media caption.
+    """
+
+    def __init__(self, type: str,
+                 media: str,
+                 caption: str = None,
+                 parse_mode: bool = None):
+        super().__init__()
+        self.type = type
+        self.media = media
+        self.caption = caption
+        self.parse_mode = parse_mode
+
+
+class InputMediaVideo(InputMedia):
+    """
+    Represents a photo to be sent.
+    :param type: (str) Type of the result, must be video
+    :param media: (str) File to send. Pass a file_id to send a file that exists on the Telegram servers (recommended),
+    pass an HTTP URL for Telegram to get a file from the Internet, or pass "attach://<file_attach_name>" to upload a new
+    one using multipart/form-data under <file_attach_name> name.
+    :param caption: (str) Optional. Caption of the photo to be sent, 0-200 characters
+    :param parse_mode: (bool) Optional. Send Markdown or HTML, if you want Telegram apps to show bold, italic,
+    fixed-width text or inline URLs in the media caption.
+    :param width: (int) Optional. Video width.
+    :param height: (int) Optional. Video height.
+    :param duration: (int) Optional. Video duration.
+    :param supports_streaming: (bool) Optional. True, if the uploaded video is suitable for streaming
+    """
+
+    def __init__(self, type: str,
+                 media: str,
+                 caption: str = None,
+                 parse_mode: bool = None,
+                 width: int = None,
+                 height: int = None,
+                 duration: int = None,
+                 supports_streaming: bool = None):
+        super().__init__()
+        self.type = type
+        self.media = media
+        self.caption = caption
+        self.parse_mode = parse_mode
+        self.width = width
+        self.height = height
+        self.duration = duration
+        self.supports_streaming = supports_streaming
 
 
 class Sticker(TelegramObjectBase):
