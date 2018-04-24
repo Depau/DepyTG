@@ -12,5 +12,6 @@ setup(
     requires=["requests"],
     extras_require={
         'flask': ['Flask'],
+        'upload_streaming': ['requests_toolbelt']
     }
 )
