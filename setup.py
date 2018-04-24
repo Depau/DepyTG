@@ -11,6 +11,6 @@ setup(
     description='The only Telegram bot library that does nothing',
     requires=["requests"],
     extras_require={
-        'webhook_flask': ['Flask']
+        'flask': ['Flask'],
     }
 )
