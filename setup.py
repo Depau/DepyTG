@@ -9,5 +9,8 @@ setup(
     author='Davide Depau',
     author_email='davide@depau.eu',
     description='The only Telegram bot library that does nothing',
-    requires=["requests"]
+    requires=["requests"],
+    extras_require={
+        'webhook_flask': ['Flask']
+    }
 )
