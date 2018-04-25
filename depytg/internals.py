@@ -256,14 +256,14 @@ class TelegramMethodBase(TelegramObjectBase):
                 filecounter += 1
 
             else:
-                form[k] = json.dumps(v)
+                form[k] = json.dumps(v) if isinstance(v, (list, dict)) else v
 
         url = base_url.format(token=token, method=self.__class__.__name__)
 
         if use_multipart:
             r = requests.post(url, data=form, files=files)
         else:
-            r = requests.post(url, json=files)
+            r = requests.post(url, json=form)
 
         j = r.json()
         return self.read_result(j)
