@@ -2204,4 +2204,4 @@ class InputFile(object):
     def __init__(self, file: BinaryIO, mimetype: str, name: str = None):
         self.file = file
         self.mime = mimetype
-        self.name = Name
+        self.name = name
