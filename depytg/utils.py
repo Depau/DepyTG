@@ -1,3 +1,5 @@
+import re
+
 from depytg.types import Message, User
 
 
@@ -30,3 +32,11 @@ def is_for_me(msg: Message, me: User, group_requires_at=True):
             return True
 
     return False
+
+def escape_markdown(text: str):
+    """
+    Helper function to escape telegram markup symbols.
+    Borrowed from Telegram Bot Api (telegram.utils.helpers)
+    """
+    escape_chars = '\*_`\['
+    return re.sub(r'([%s])' % escape_chars, r'\\\1', text)
