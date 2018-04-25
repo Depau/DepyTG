@@ -39,5 +39,6 @@ def get_blueprint(name: str, url_path: str, on_update: Callable[[Update], None],
     def webhook():
         j = request.json()
         on_update(cast(Update, Update.from_json(j)))
+        return '', 200
 
     return bp
