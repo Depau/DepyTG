@@ -1,12 +1,12 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 with open("README.md") as f:
     DESCRIPTION = f.read()
 
 setup(
     name='DepyTG',
-    version='3.6.2',
-    packages=['depytg'],
+    version='3.6.2.post0',
+    packages=find_packages(),
     url='https://github.com/Depau/DepyTG',
     author='Davide Depau',
     author_email='davide@depau.eu',
