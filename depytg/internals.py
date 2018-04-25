@@ -247,9 +247,7 @@ class TelegramMethodBase(TelegramObjectBase):
         for k, v in self.items():
             if isinstance(v, InputFile):
                 use_multipart = True
-                if "b" not in v.file.mode:
-                    warnings.warn("Object '{}', field '{}': InputFile is not in binary mode"
-                                  .format(self.__class__.__name__, k), RuntimeWarning)
+
                 if v.name:
                     fname = v.name
                 elif getattr(v.file, "name", None):
