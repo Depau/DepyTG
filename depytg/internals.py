@@ -210,7 +210,7 @@ class TelegramObjectBase(dict):
         if required:
             raise AttributeError(
                 "Field '{}' of object '{}' is required and can't be deleted."
-                .format(unshadow(item), self.__class__.__name__))
+                    .format(unshadow(item), self.__class__.__name__))
 
         if unshadow(item) in self:
             self.pop(unshadow(item))
@@ -231,12 +231,6 @@ class TelegramMethodBase(TelegramObjectBase):
         # Local import to issues due to recursive imports
         # Python is smart enough to work everything out
         from depytg.types import InputFile
-        try:
-            from requests_toolbelt.multipart.encoder import MultipartEncoder
-            use_toolbelt = True
-        except ImportError:
-            use_toolbelt = False
-            MultipartEncoder = None
 
         fields = {}
         use_multipart = False
@@ -263,22 +257,15 @@ class TelegramMethodBase(TelegramObjectBase):
             else:
                 fields[k] = v
 
-        if use_multipart and use_toolbelt:
-            fields = MultipartEncoder(fields=fields)
-
         url = base_url.format(token=token, method=self.__class__.__name__)
 
         if use_multipart:
-            if use_toolbelt:
-                r = requests.post(url, data=fields)
-            else:
-                r = requests.post(url, files=fields)
+            r = requests.post(url, files=fields)
         else:
             r = requests.post(url, json=fields)
 
         j = r.json()
         return self.read_result(j)
-
 
     @classmethod
     @overload

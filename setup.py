@@ -31,7 +31,6 @@ setup(
     python_requires='>=3',
     requires=["requests"],
     extras_require={
-        'flask': ['Flask'],
-        'upload_streaming': ['requests_toolbelt']
+        'flask': ['Flask']
     }
 )
