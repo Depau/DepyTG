@@ -34,10 +34,9 @@ def get_blueprint(name: str, url_path: str, on_update: Callable[[Update], None],
     if not bp:
         bp = Blueprint(name, name)
 
-    @bp.route("/{}".format(url_path), methods=['POST'])
     @bp.route("/{}/".format(url_path), methods=['POST'])
     def webhook():
-        j = request.json()
+        j = request.json
         on_update(cast(Update, Update.from_json(j)))
         return '', 200
 
