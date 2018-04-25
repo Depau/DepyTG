@@ -232,7 +232,8 @@ class TelegramMethodBase(TelegramObjectBase):
         # Python is smart enough to work everything out
         from depytg.types import InputFile
 
-        fields = {}
+        form = {}
+        files = []
         use_multipart = False
 
         # Look for InputFile objects and turn them into something that makes
@@ -249,20 +250,20 @@ class TelegramMethodBase(TelegramObjectBase):
                 else:
                     fname = "file{}".format(filecounter)
 
-                fields[k] = (fname,
-                             v.file,
-                             v.mime)
+                form[k] = "attach://" + fname
+
+                files.append((fname, v.file))
                 filecounter += 1
 
             else:
-                fields[k] = v
+                form[k] = json.dumps(v)
 
         url = base_url.format(token=token, method=self.__class__.__name__)
 
         if use_multipart:
-            r = requests.post(url, files=fields)
+            r = requests.post(url, data=form, files=files)
         else:
-            r = requests.post(url, json=fields)
+            r = requests.post(url, json=files)
 
         j = r.json()
         return self.read_result(j)
