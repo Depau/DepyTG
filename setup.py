@@ -29,8 +29,9 @@ setup(
     ],
     keywords='telegram bot development',
     python_requires='>=3',
-    requires=["requests"],
+    install_requires=["requests", "asyncio"],
     extras_require={
-        'flask': ['Flask']
+        'flask': ['Flask'],
+        'asyncio': ['aiohttp']
     }
 )

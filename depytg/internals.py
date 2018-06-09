@@ -2,9 +2,11 @@ import inspect
 import json
 import warnings
 from inspect import _empty
-from typing import TypeVar, Union, Any, Generator, Tuple, Type, Optional, overload, get_type_hints
+from typing import TypeVar, Union, Any, Generator, Tuple, Type, Optional, overload, get_type_hints, Sequence
 
 import os
+
+import asyncio as asyncio
 import requests
 
 from depytg.errors import NotImplementedWarning, TelegramError
@@ -227,13 +229,13 @@ class TelegramObjectBase(dict):
 class TelegramMethodBase(TelegramObjectBase):
     ReturnType = Any
 
-    def __call__(self, token: str) -> ReturnType:
+    def _prepare_for_call(self, token: str) -> Tuple[str, dict, dict, bool]:
         # Local import to issues due to recursive imports
         # Python is smart enough to work everything out
         from depytg.types import InputFile
 
         form = {}
-        files = []
+        files = {}
         use_multipart = False
 
         # Look for InputFile objects and turn them into something that makes
@@ -243,16 +245,16 @@ class TelegramMethodBase(TelegramObjectBase):
             if isinstance(v, InputFile):
                 use_multipart = True
 
-                if v.name:
-                    fname = v.name
-                elif getattr(v.file, "name", None):
-                    fname = os.path.basename(v.file.name)
-                else:
-                    fname = "file{}".format(filecounter)
+                fname = "file{}".format(filecounter)
+
+                if v.name and not v.name in files:
+                    fname += "_" + v.name
+                elif getattr(v.file, "name", None) and os.path.basename(v.file.name) not in files:
+                    fname += "_" + os.path.basename(v.file.name)
 
                 form[k] = "attach://" + fname
 
-                files.append((fname, v.file))
+                files[fname] = v.file
                 filecounter += 1
 
             else:
@@ -260,13 +262,33 @@ class TelegramMethodBase(TelegramObjectBase):
 
         url = base_url.format(token=token, method=self.__class__.__name__)
 
+        return url, form, files, use_multipart
+
+    def __call__(self, token: str) -> ReturnType:
+        url, form, files, use_multipart = self._prepare_for_call(token)
+
         if use_multipart:
-            r = requests.post(url, data=form, files=files)
+            r = requests.post(url, data=form, files=list(files.items()))
         else:
             r = requests.post(url, json=form)
 
         j = r.json()
         return self.read_result(j)
+
+    @asyncio.coroutine
+    def async_call(self, session, token: str) -> ReturnType:
+        url, form, files, use_multipart = self._prepare_for_call(token)
+
+        if use_multipart:
+            data = form.copy()
+            data.update(files)
+            req = session.post(url, data=data)
+        else:
+            req = session.post(url, json=form)
+
+        with (yield from req) as r:
+            j = yield from r.json()
+            return self.read_result(j)
 
     @classmethod
     @overload
