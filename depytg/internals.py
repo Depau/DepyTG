@@ -229,13 +229,14 @@ class TelegramObjectBase(dict):
 class TelegramMethodBase(TelegramObjectBase):
     ReturnType = Any
 
-    def _prepare_for_call(self, token: str) -> Tuple[str, dict, dict, bool]:
+    def _prepare_for_call(self, token: str) -> Tuple[str, dict, dict, dict, bool]:
         # Local import to issues due to recursive imports
         # Python is smart enough to work everything out
         from depytg.types import InputFile
 
         form = {}
         files = {}
+        inputfiles = {}
         use_multipart = False
 
         # Look for InputFile objects and turn them into something that makes
@@ -255,6 +256,7 @@ class TelegramMethodBase(TelegramObjectBase):
                 form[k] = "attach://" + fname
 
                 files[fname] = v.file
+                inputfiles[fname] = v
                 filecounter += 1
 
             else:
@@ -262,10 +264,10 @@ class TelegramMethodBase(TelegramObjectBase):
 
         url = base_url.format(token=token, method=self.__class__.__name__)
 
-        return url, form, files, use_multipart
+        return url, form, files, inputfiles, use_multipart
 
     def __call__(self, token: str) -> ReturnType:
-        url, form, files, use_multipart = self._prepare_for_call(token)
+        url, form, files, _, use_multipart = self._prepare_for_call(token)
 
         if use_multipart:
             r = requests.post(url, data=form, files=list(files.items()))
@@ -277,18 +279,29 @@ class TelegramMethodBase(TelegramObjectBase):
 
     @asyncio.coroutine
     def async_call(self, session, token: str) -> ReturnType:
-        url, form, files, use_multipart = self._prepare_for_call(token)
+        url, form, files, inputfiles, use_multipart = self._prepare_for_call(token)
 
         if use_multipart:
             data = form.copy()
             data.update(files)
+
+            print("Method:", self.__class__.__name__)
+            print("Data:", data)
+
+            from aiohttp import FormData
+            data = FormData()
+            data.add_fields(*((str(k), str(v)) for k, v in form.items()))
+            for name, f in inputfiles.items():
+                print(name, f.file, f.mime, name)
+                data.add_field(name, f.file, content_type=f.mime, filename=name)
+
             req = session.post(url, data=data)
         else:
             req = session.post(url, json=form)
 
-        with (yield from req) as r:
-            j = yield from r.json()
-            return self.read_result(j)
+        r = yield from req
+        j = yield from r.json()
+        return self.read_result(j)
 
     @classmethod
     @overload
