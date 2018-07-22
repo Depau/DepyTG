@@ -1,12 +1,11 @@
+import asyncio as asyncio
 import inspect
 import json
+import os
 import warnings
 from inspect import _empty
-from typing import TypeVar, Union, Any, Generator, Tuple, Type, Optional, overload, get_type_hints, Sequence
+from typing import TypeVar, Union, Any, Generator, Tuple, Type, Optional, overload, get_type_hints
 
-import os
-
-import asyncio as asyncio
 import requests
 
 from depytg.errors import NotImplementedWarning, TelegramError
@@ -180,27 +179,33 @@ class TelegramObjectBase(dict):
                 raise
 
     def __setattr__(self, item, value):
+        from depytg.depyfier import devel
+
+        if item.startswith('_'):
+            return super().__setattr__(item, value)
+
         try:
             if self._is_required(item):
-                self[unshadow(item)] = value
+                self[unshadow(item)] = self._depyfy(value, item)
                 return
         except AttributeError:
             pass
+
+        # Avoid setting None defaults when not explicitly provided
+        if unshadow(item) not in self and value is None:
+            pass
+        else:
+            self[unshadow(item)] = self._depyfy(value, item)
+
         try:
-            if self._is_optional(item):
-                # Avoid setting None defaults when not explicitly provided
-                if unshadow(item) not in self and value is None:
-                    pass
-                else:
-                    self[unshadow(item)] = self._depyfy(value, item)
-                return
+            if devel() and not self._is_optional(item):
+                warnings.warn(
+                    "'{}' object has no attribute '{}', but you are trying to set it. It WILL appear in the JSON."
+                        .format(self.__class__.__name__, unshadow(item)), RuntimeWarning)
         except AttributeError:
             pass
-        warnings.warn(
-            "'{}' object has no attribute '{}', but you are trying to set it. It will be set as a Python attribute and \
-            will not appear in the ."
-                .format(self.__class__.__name__, unshadow(item)), RuntimeWarning)
-        return super().__setattr__(item, value)
+
+        # return super().__setattr__(item, value)
 
     def __delattr__(self, item):
         required = False
@@ -321,10 +326,15 @@ class TelegramMethodBase(TelegramObjectBase):
         :param j: The response JSON/dict
         :return: A TelegramObjectBase subclass instance representing the response
         """
-        from depytg.depyfier import depyfy
+        from depytg.depyfier import depyfy, depyfy_obj_hook, devel
 
         if isinstance(j, str):
-            j = json.loads(j)
+            if devel():
+                hook = None
+            else:
+                hook = depyfy_obj_hook
+
+            j = json.loads(j, object_hook=hook)
 
         if "ok" in j and j["ok"] and "result" in j:
             return depyfy(j["result"], cls.ReturnType)

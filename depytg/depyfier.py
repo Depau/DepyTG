@@ -1,10 +1,25 @@
 import collections.abc
+import os
 import warnings
+from typing import GenericMeta, Mapping, _ForwardRef, Union, Any
 
 from depytg.errors import NotImplementedWarning
 from depytg.types import *
 
-from typing import GenericMeta, Sequence, Mapping, _ForwardRef, Union, Any
+_warned = False
+
+
+def devel() -> bool:
+    global _warned
+    try:
+        dbg = bool(os.environ.get('DEPYTG_DEVEL', False))
+        if dbg and not _warned:
+            _warned = True
+            warnings.warn('DepyTG development mode enabled, uses more CPU. Unset DEPYTG_DEVEL for performance.')
+        return dbg
+    except Exception as e:
+        warnings.warn(e)
+        return False
 
 
 def is_union(some_type: type(Union)) -> bool:
@@ -35,8 +50,8 @@ def is_mapping(some_type: GenericMeta) -> bool:
 
 def is_tobject(some_type: type) -> bool:
     return ((
-                type(some_type) == type and
-                issubclass(some_type, TelegramObjectBase)
+                    type(some_type) == type and
+                    issubclass(some_type, TelegramObjectBase)
             ) or isinstance(some_type, TelegramObjectBase))
 
 
@@ -58,6 +73,9 @@ def depyfy(obj: Any, otype: Union[type, GenericMeta]) -> Any:
     :return: The converted object
     """
 
+    if not devel():
+        return depyfy_fast(obj)
+
     if is_sequence(otype):
         return depyfy_sequence(obj, otype)
     elif is_mapping(otype):
@@ -68,6 +86,30 @@ def depyfy(obj: Any, otype: Union[type, GenericMeta]) -> Any:
         return depyfy_tobject(obj, otype)
     else:
         return obj
+
+
+def depyfy_fast(obj: Any) -> Any:
+    if isinstance(obj, TelegramObjectBase):
+        return obj
+
+    if isinstance(obj, tuple):
+        obj = list(obj)
+
+    if isinstance(obj, list):
+        for i in range(len(obj)):
+            obj[i] = depyfy_fast(obj[i])
+
+        return obj
+
+    if isinstance(obj, dict):
+        new = TelegramObjectBase()
+
+        for key, value in obj.items():
+            new[key] = depyfy_fast(value)
+
+        return new
+
+    return obj
 
 
 def depyfy_sequence(seq: Sequence, seq_type: GenericMeta) -> Sequence:
@@ -112,7 +154,7 @@ def depyfy_mapping(mapp: Mapping, map_type: GenericMeta) -> Mapping:
 
     # Skip loop if both keys and values are regular Python objects
     if not (isinstance(keytype, GenericMeta) or is_tobject(keytype) or
-                isinstance(valtype, GenericMeta) or is_tobject(valtype)):
+            isinstance(valtype, GenericMeta) or is_tobject(valtype)):
         return mapp
 
     # Either key or value needs to be depyfied
@@ -192,3 +234,9 @@ def depyfy_tobject(tobj: Union[TelegramObjectBase, dict, str], otype: type) -> T
     elif type(tobj) in (str, dict):
         return otype.from_json(tobj)
     return tobj
+
+
+def depyfy_obj_hook(obj: dict) -> 'TelegramObjectBase':
+    t = TelegramObjectBase()
+    t.update(obj)
+    return t
