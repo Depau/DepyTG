@@ -1,7 +1,12 @@
 import collections.abc
 import os
 import warnings
-from typing import GenericMeta, Mapping, _ForwardRef, Union, Any
+from typing import Mapping, Union, Any
+
+try:
+    from typing import ForwardRef
+except ImportError:
+    from typing import _ForwardRef as ForwardRef
 
 from depytg.errors import NotImplementedWarning
 from depytg.types import *
@@ -36,13 +41,13 @@ def is_union(some_type: type(Union)) -> bool:
            str(type(some_type)) == "typing.Union"
 
 
-def is_sequence(some_type: GenericMeta) -> bool:
+def is_sequence(some_type) -> bool:
     if "__extra__" in dir(some_type):
         return some_type.__extra__ == collections.abc.Sequence
     return False
 
 
-def is_mapping(some_type: GenericMeta) -> bool:
+def is_mapping(some_type) -> bool:
     if "__extra__" in dir(some_type):
         return some_type.__extra__ == collections.abc.Mapping
     return False
@@ -55,11 +60,11 @@ def is_tobject(some_type: type) -> bool:
             ) or isinstance(some_type, TelegramObjectBase))
 
 
-def is_forwardref(some_type: GenericMeta) -> bool:
-    return isinstance(some_type, _ForwardRef)
+def is_forwardref(some_type) -> bool:
+    return isinstance(some_type, ForwardRef)
 
 
-def depyfy(obj: Any, otype: Union[type, GenericMeta]) -> Any:
+def depyfy(obj: Any, otype: type) -> Any:
     """
     Walks into a generic object 'obj' and converts it to a DepyTG typechecked
     object, if possible.
@@ -112,11 +117,11 @@ def depyfy_fast(obj: Any) -> Any:
     return obj
 
 
-def depyfy_sequence(seq: Sequence, seq_type: GenericMeta) -> Sequence:
+def depyfy_sequence(seq: Sequence, seq_type) -> Sequence:
     subtype = seq_type.__args__[0]
     newseq = []
 
-    if isinstance(subtype, _ForwardRef):
+    if isinstance(subtype, ForwardRef):
         warnings.warn("Not depyfying sequence whose argument is a forward reference", NotImplementedWarning)
         return seq
     elif is_sequence(subtype):
@@ -136,7 +141,7 @@ def depyfy_sequence(seq: Sequence, seq_type: GenericMeta) -> Sequence:
     return type(seq)(newseq)
 
 
-def depyfy_mapping(mapp: Mapping, map_type: GenericMeta) -> Mapping:
+def depyfy_mapping(mapp: Mapping, map_type) -> Mapping:
     keytype, valtype = map_type.__args__
     newmap = {}
 
@@ -145,7 +150,7 @@ def depyfy_mapping(mapp: Mapping, map_type: GenericMeta) -> Mapping:
 
     # Skip loop if everything is a forward reference
     if k_is_fref or v_is_fref:
-        warnings.warn("Not depyfying mapping whose {} defined as _ForwardRef"
+        warnings.warn("Not depyfying mapping whose {} defined as ForwardRef"
                       .format(k_is_fref and not v_is_fref and "key is" or \
                               v_is_fref and not k_is_fref and "value is" or \
                               k_is_fref and v_is_fref and "key and value are"),
@@ -153,8 +158,7 @@ def depyfy_mapping(mapp: Mapping, map_type: GenericMeta) -> Mapping:
         return mapp
 
     # Skip loop if both keys and values are regular Python objects
-    if not (isinstance(keytype, GenericMeta) or is_tobject(keytype) or
-            isinstance(valtype, GenericMeta) or is_tobject(valtype)):
+    if not is_tobject(keytype) or is_tobject(valtype):
         return mapp
 
     # Either key or value needs to be depyfied
@@ -185,7 +189,7 @@ def depyfy_mapping(mapp: Mapping, map_type: GenericMeta) -> Mapping:
     return type(mapp)(newmap)
 
 
-def depyfy_union(obj: Any, union: GenericMeta) -> Any:
+def depyfy_union(obj: Any, union) -> Any:
     given_t = type(obj)
 
     # If the object is a regular Python object and its type is specified
