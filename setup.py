@@ -5,7 +5,7 @@ with open("README.md") as f:
 
 setup(
     name='DepyTG',
-    version='3.6.4',
+    version='3.6.5',
     packages=find_packages(),
     url='https://github.com/Depau/DepyTG',
     author='Davide Depau',
