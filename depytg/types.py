@@ -1,4 +1,5 @@
-from typing import Sequence, BinaryIO
+from typing import Sequence, BinaryIO, Union
+
 from depytg.internals import TelegramObjectBase
 
 
@@ -316,9 +317,7 @@ class Message(TelegramObjectBase):
 class MessageEntity(TelegramObjectBase):
     """
     This object represents one special entity in a text message. For example, hashtags, usernames, URLs, etc.
-    :param type: (str) Type of the entity. Can be mention (@username), hashtag, bot_command, url, email, bold
-    (bold text), italic (italic text), code (monowidth string), pre (monowidth block), text_link (for clickable
-    text URLs), text_mention (for users without usernames)
+    :param type: (str) Type of the entity. Can be mention (@username), hashtag, cashtag, bot_command, url, email, phone_number, bold (bold text), italic (italic text), code (monowidth string), pre (monowidth block), text_link (for clickable text URLs), text_mention (for users without usernames)
     :param offset: (int) Offset in UTF-16 code units to the start of the entity
     :param length: (int) Length of the entity in UTF-16 code units
     :param url: (str) Optional. For “text_link” only, url that will be opened after user taps on the text
@@ -369,6 +368,7 @@ class Audio(TelegramObjectBase):
     :param title: (str) Optional. Title of the audio as defined by sender or by audio tags
     :param mime_type: (str) Optional. MIME type of the file as defined by sender
     :param file_size: (int) Optional. File size
+    :param thumb: (PhotoSize) Optional. Thumbnail of the album cover to which the music file belongs
     """
 
     def __init__(self, file_id: str,
@@ -376,7 +376,8 @@ class Audio(TelegramObjectBase):
                  performer: str = None,
                  title: str = None,
                  mime_type: str = None,
-                 file_size: int = None):
+                 file_size: int = None,
+                 thumb: PhotoSize = None):
         super().__init__()
 
         self.file_id = file_id
@@ -385,6 +386,7 @@ class Audio(TelegramObjectBase):
         self.title = title
         self.mime_type = mime_type
         self.file_size = file_size
+        self.thumb = thumb
 
 
 class Document(TelegramObjectBase):
@@ -493,18 +495,21 @@ class Contact(TelegramObjectBase):
     :param first_name: (str) Contact's first name
     :param last_name: (str) Optional. Contact's last name
     :param user_id: (int) Optional. Contact's user identifier in Telegram
+    :param vcard: (str) Optional. Additional data about the contact in the form of a vCard
     """
 
     def __init__(self, phone_number: str,
                  first_name: str,
                  last_name: str = None,
-                 user_id: int = None):
+                 user_id: int = None,
+                 vcard: str = None):
         super().__init__()
 
         self.phone_number = phone_number
         self.first_name = first_name
         self.last_name = last_name
         self.user_id = user_id
+        self.vcard = vcard
 
 
 class Location(TelegramObjectBase):
@@ -529,18 +534,22 @@ class Venue(TelegramObjectBase):
     :param title: (str) Name of the venue
     :param address: (str) Address of the venue
     :param foursquare_id: (str) Optional. Foursquare identifier of the venue
+    :param foursquare_type: (str) Optional. Foursquare type of the venue. (For example, “arts_entertainment/default”,
+    “arts_entertainment/aquarium” or “food/icecream”.)
     """
 
     def __init__(self, location: 'Location',
                  title: str,
                  address: str,
-                 foursquare_id: str = None):
+                 foursquare_id: str = None,
+                 foursquare_type: str = None):
         super().__init__()
 
         self.location = location
         self.title = title
         self.address = address
         self.foursquare_id = foursquare_id
+        self.foursquare_type = foursquare_type
 
 
 class UserProfilePhotos(TelegramObjectBase):
@@ -668,7 +677,7 @@ class InlineKeyboardButton(TelegramObjectBase):
     """
     This object represents one button of an inline keyboard. You must use exactly one of the optional fields.
     :param text: (str) Label text on the button
-    :param url: (str) Optional. HTTP url to be opened when button is pressed
+    :param url: (str) Optional. HTTP or tg:// url to be opened when button is pressed
     :param callback_data: (str) Optional. Data to be sent in a callback query to the bot when button is pressed, 1-64
     bytes
     :param switch_inline_query: (str) Optional. If set, pressing the button will prompt the user to select one of their
@@ -867,6 +876,25 @@ class ResponseParameters(TelegramObjectBase):
         self.retry_after = retry_after
 
 
+class InputFile(object):
+    """
+    This object represents the contents of a file to be uploaded. Must be posted using multipart/form-data in the usual
+    way that files are uploaded via the browser.
+    This object is only present for type checking purposes and for use with the built-in
+    requests-based method calling API. It will raise an exception if you try to encode
+    it as JSON. If you're sending requests manually you need to upload files yourself.
+    :param file: (BinaryIO) Your input file. It must be opened in binary mode
+    :param mimetype: (str) The file's mimetype
+    :param name: (str) Optional. Filename, overrides the original file name when sending the request. Useful when
+    uploading from an in-memory buffer.
+    """
+
+    def __init__(self, file: BinaryIO, mimetype: str, name: str = None):
+        self.file = file
+        self.mime = mimetype
+        self.name = name
+
+
 class InputMedia(TelegramObjectBase):
     """
     This object represents the content of a media message to be sent. It must be one of
@@ -889,6 +917,10 @@ class InputMediaPhoto(InputMedia):
     :param media: (str) File to send. Pass a file_id to send a file that exists on the Telegram servers (recommended),
     pass an HTTP URL for Telegram to get a file from the Internet, or pass "attach://<file_attach_name>" to upload a new
     one using multipart/form-data under <file_attach_name> name.
+    :param thumb: Union[InputFile, String] Optional. Thumbnail of the file sent. The thumbnail should be in JPEG format
+    and less than 200 kB in size. A thumbnail‘s width and height should not exceed 90. Ignored if the file is not
+    uploaded using multipart/form-data. Thumbnails can’t be reused and can be only uploaded as a new file, so you can
+    pass “attach://<file_attach_name>” if the thumbnail was uploaded using multipart/form-data under <file_attach_name>.
     :param caption: (str) Optional. Caption of the photo to be sent, 0-200 characters
     :param parse_mode: (bool) Optional. Send Markdown or HTML, if you want Telegram apps to show bold, italic,
     fixed-width text or inline URLs in the media caption.
@@ -896,11 +928,13 @@ class InputMediaPhoto(InputMedia):
 
     def __init__(self, type: str,
                  media: str,
+                 thumb: Union[InputFile, str] = None,
                  caption: str = None,
                  parse_mode: bool = None):
         super().__init__()
         self.type = type
         self.media = media
+        self.thumb = thumb
         self.caption = caption
         self.parse_mode = parse_mode
 
@@ -912,6 +946,10 @@ class InputMediaVideo(InputMedia):
     :param media: (str) File to send. Pass a file_id to send a file that exists on the Telegram servers (recommended),
     pass an HTTP URL for Telegram to get a file from the Internet, or pass "attach://<file_attach_name>" to upload a new
     one using multipart/form-data under <file_attach_name> name.
+    :param thumb: Union[InputFile, String] Optional. Thumbnail of the file sent. The thumbnail should be in JPEG format
+    and less than 200 kB in size. A thumbnail‘s width and height should not exceed 90. Ignored if the file is not
+    uploaded using multipart/form-data. Thumbnails can’t be reused and can be only uploaded as a new file, so you can
+    pass “attach://<file_attach_name>” if the thumbnail was uploaded using multipart/form-data under <file_attach_name>.
     :param caption: (str) Optional. Caption of the photo to be sent, 0-200 characters
     :param parse_mode: (bool) Optional. Send Markdown or HTML, if you want Telegram apps to show bold, italic,
     fixed-width text or inline URLs in the media caption.
@@ -923,6 +961,7 @@ class InputMediaVideo(InputMedia):
 
     def __init__(self, type: str,
                  media: str,
+                 thumb: Union[InputFile, str] = None,
                  caption: str = None,
                  parse_mode: bool = None,
                  width: int = None,
@@ -932,12 +971,118 @@ class InputMediaVideo(InputMedia):
         super().__init__()
         self.type = type
         self.media = media
+        self.thumb = thumb
         self.caption = caption
         self.parse_mode = parse_mode
         self.width = width
         self.height = height
         self.duration = duration
         self.supports_streaming = supports_streaming
+
+
+class InputMediaAnimation(InputMedia):
+    """
+    Represents an animation file (GIF or H.264/MPEG-4 AVC video without sound) to be sent.
+    :param type: (str) Type of the result, must be animation
+    :param media: (str) File to send. Pass a file_id to send a file that exists on the Telegram servers (recommended),
+    pass an HTTP URL for Telegram to get a file from the Internet, or pass "attach://<file_attach_name>" to upload a new
+    one using multipart/form-data under <file_attach_name> name.
+    :param thumb: Union[InputFile, String] Optional. Thumbnail of the file sent. The thumbnail should be in JPEG format
+    and less than 200 kB in size. A thumbnail‘s width and height should not exceed 90. Ignored if the file is not
+    uploaded using multipart/form-data. Thumbnails can’t be reused and can be only uploaded as a new file, so you can
+    pass “attach://<file_attach_name>” if the thumbnail was uploaded using multipart/form-data under <file_attach_name>.
+    :param caption: (str) Optional. Caption of the photo to be sent, 0-200 characters
+    :param parse_mode: (bool) Optional. Send Markdown or HTML, if you want Telegram apps to show bold, italic,
+    fixed-width text or inline URLs in the media caption.
+    :param width: (int) Optional. Video width.
+    :param height: (int) Optional. Video height.
+    :param duration: (int) Optional. Video duration.
+    """
+
+    def __init__(self, type: str,
+                 media: str,
+                 thumb: Union[InputFile, str] = None,
+                 caption: str = None,
+                 parse_mode: bool = None,
+                 width: int = None,
+                 height: int = None,
+                 duration: int = None):
+        super().__init__()
+        self.type = type
+        self.media = media
+        self.thumb = thumb
+        self.caption = caption
+        self.parse_mode = parse_mode
+        self.width = width
+        self.height = height
+        self.duration = duration
+
+
+class InputMediaAudio(InputMedia):
+    """
+    Represents an audio file to be treated as music to be sent.
+    :param type: (str) Type of the result, must be audio
+    :param media: (str) File to send. Pass a file_id to send a file that exists on the Telegram servers (recommended),
+    pass an HTTP URL for Telegram to get a file from the Internet, or pass "attach://<file_attach_name>" to upload a new
+    one using multipart/form-data under <file_attach_name> name.
+    :param thumb: Union[InputFile, String] Optional. Thumbnail of the file sent. The thumbnail should be in JPEG format
+    and less than 200 kB in size. A thumbnail‘s width and height should not exceed 90. Ignored if the file is not
+    uploaded using multipart/form-data. Thumbnails can’t be reused and can be only uploaded as a new file, so you can
+    pass “attach://<file_attach_name>” if the thumbnail was uploaded using multipart/form-data under <file_attach_name>.
+    :param caption: (str) Optional. Caption of the photo to be sent, 0-200 characters
+    :param parse_mode: (bool) Optional. Send Markdown or HTML, if you want Telegram apps to show bold, italic,
+    fixed-width text or inline URLs in the media caption.
+    :param duration: (int) Optional. Duration of the audio in seconds
+    :param performer: (str) Optional. Performer of the audio
+    :param title: (str) Optional. Title of the audio
+    """
+
+    def __init__(self, type: str,
+                 media: str,
+                 thumb: Union[InputFile, str] = None,
+                 caption: str = None,
+                 parse_mode: bool = None,
+                 duration: int = None,
+                 performer: str = None,
+                 title: str = None):
+        super().__init__()
+        self.type = type
+        self.media = media
+        self.thumb = thumb
+        self.caption = caption
+        self.parse_mode = parse_mode
+        self.duration = duration
+        self.performer = performer
+        self.title = title
+
+
+class InputMediaDocument(InputMedia):
+    """
+    Represents a general file to be sent.
+    :param type: (str) Type of the result, must be document
+    :param media: (str) File to send. Pass a file_id to send a file that exists on the Telegram servers (recommended),
+    pass an HTTP URL for Telegram to get a file from the Internet, or pass "attach://<file_attach_name>" to upload a new
+    one using multipart/form-data under <file_attach_name> name.
+    :param thumb: Union[InputFile, String] Optional. Thumbnail of the file sent. The thumbnail should be in JPEG format
+    and less than 200 kB in size. A thumbnail‘s width and height should not exceed 90. Ignored if the file is not
+    uploaded using multipart/form-data. Thumbnails can’t be reused and can be only uploaded as a new file, so you can
+    pass “attach://<file_attach_name>” if the thumbnail was uploaded using multipart/form-data under <file_attach_name>.
+    :param caption: (str) Optional. Caption of the photo to be sent, 0-200 characters
+    :param parse_mode: (bool) Optional. Send Markdown or HTML, if you want Telegram apps to show bold, italic,
+    fixed-width text or inline URLs in the media caption.
+    """
+
+    def __init__(self, type: str,
+                 media: str,
+                 thumb: Union[InputFile, str] = None,
+                 caption: str = None,
+                 parse_mode: bool = None):
+        super().__init__()
+        self.type = type
+        self.media = media
+        self.thumb = thumb
+        self.caption = caption
+        self.parse_mode = parse_mode
 
 
 class Sticker(TelegramObjectBase):
@@ -1447,6 +1592,8 @@ class InlineQueryResultVenue(InlineQueryResult):
     :param title: (str) Title of the venue
     :param address: (str) Address of the venue
     :param foursquare_id: (str) Optional. Foursquare identifier of the venue if known
+    :param foursquare_type: (str) Optional. Foursquare type of the venue. (For example, “arts_entertainment/default”,
+    “arts_entertainment/aquarium” or “food/icecream”.)
     :param reply_markup: (InlineKeyboardMarkup) Optional. Inline keyboard attached to the message
     :param input_message_content: (InputMessageContent) Optional. Content of the message to be sent instead of the venue
     :param thumb_url: (str) Optional. Url of the thumbnail for the result
@@ -1461,6 +1608,7 @@ class InlineQueryResultVenue(InlineQueryResult):
                  title: str,
                  address: str,
                  foursquare_id: str = None,
+                 foursquare_type: str = None,
                  reply_markup: 'InlineKeyboardMarkup' = None,
                  input_message_content: 'InputMessageContent' = None,
                  thumb_url: str = None,
@@ -1475,6 +1623,7 @@ class InlineQueryResultVenue(InlineQueryResult):
         self.title = title
         self.address = address
         self.foursquare_id = foursquare_id
+        self.foursquare_type = foursquare_type
         self.reply_markup = reply_markup
         self.input_message_content = input_message_content
         self.thumb_url = thumb_url
@@ -1491,6 +1640,7 @@ class InlineQueryResultContact(InlineQueryResult):
     :param phone_number: (str) Contact's phone number
     :param first_name: (str) Contact's first name
     :param last_name: (str) Optional. Contact's last name
+    :param vcard: (str) Optional. Additional data about the contact in the form of a vCard
     :param reply_markup: (InlineKeyboardMarkup) Optional. Inline keyboard attached to the message
     :param input_message_content: (InputMessageContent) Optional. Content of the message to be sent instead of the
     contact
@@ -1504,6 +1654,7 @@ class InlineQueryResultContact(InlineQueryResult):
                  phone_number: str,
                  first_name: str,
                  last_name: str = None,
+                 vcard: str = None,
                  reply_markup: 'InlineKeyboardMarkup' = None,
                  input_message_content: 'InputMessageContent' = None,
                  thumb_url: str = None,
@@ -1516,6 +1667,7 @@ class InlineQueryResultContact(InlineQueryResult):
         self.phone_number = phone_number
         self.first_name = first_name
         self.last_name = last_name
+        self.vcard = vcard
         self.reply_markup = reply_markup
         self.input_message_content = input_message_content
         self.thumb_url = thumb_url
@@ -1851,13 +2003,16 @@ class InputVenueMessageContent(InputMessageContent):
     :param title: (str) Name of the venue
     :param address: (str) Address of the venue
     :param foursquare_id: (str) Optional. Foursquare identifier of the venue, if known
+    :param foursquare_type: (str) Optional. Foursquare type of the venue. (For example, “arts_entertainment/default”,
+    “arts_entertainment/aquarium” or “food/icecream”.)
     """
 
     def __init__(self, latitude: float,
                  longitude: float,
                  title: str,
                  address: str,
-                 foursquare_id: str = None):
+                 foursquare_id: str = None,
+                 foursquare_type: str = None):
         super().__init__()
 
         self.latitude = latitude
@@ -1865,6 +2020,7 @@ class InputVenueMessageContent(InputMessageContent):
         self.title = title
         self.address = address
         self.foursquare_id = foursquare_id
+        self.foursquare_type = foursquare_type
 
 
 class InputContactMessageContent(InputMessageContent):
@@ -1873,16 +2029,19 @@ class InputContactMessageContent(InputMessageContent):
     :param phone_number: (str) Contact's phone number
     :param first_name: (str) Contact's first name
     :param last_name: (str) Optional. Contact's last name
+    :param vcard: (str) Optional. Additional data about the contact in the form of a vCard
     """
 
     def __init__(self, phone_number: str,
                  first_name: str,
-                 last_name: str = None):
+                 last_name: str = None,
+                 vcard: str = None):
         super().__init__()
 
         self.phone_number = phone_number
         self.first_name = first_name
         self.last_name = last_name
+        self.vcard = vcard
 
 
 class ChosenInlineResult(TelegramObjectBase):
@@ -2186,22 +2345,3 @@ class GameHighScore(TelegramObjectBase):
         self.position = position
         self.user = user
         self.score = score
-
-
-class InputFile(object):
-    """
-    This object represents the contents of a file to be uploaded. Must be posted using multipart/form-data in the usual
-    way that files are uploaded via the browser.
-    This object is only present for type checking purposes and for use with the built-in
-    requests-based method calling API. It will raise an exception if you try to encode
-    it as JSON. If you're sending requests manually you need to upload files yourself.
-    :param file: (BinaryIO) Your input file. It must be opened in binary mode
-    :param mimetype: (str) The file's mimetype
-    :param name: (str) Optional. Filename, overrides the original file name when sending the request. Useful when
-    uploading from an in-memory buffer.
-    """
-
-    def __init__(self, file: BinaryIO, mimetype: str, name: str = None):
-        self.file = file
-        self.mime = mimetype
-        self.name = name

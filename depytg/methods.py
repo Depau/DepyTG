@@ -1,4 +1,5 @@
 from typing import Union
+
 from depytg.internals import TelegramMethodBase
 from depytg.types import *
 
@@ -215,6 +216,10 @@ class sendAudio(TelegramMethodBase):
     :param duration: (int) Optional. Duration of the audio in seconds
     :param performer: (str) Optional. Performer
     :param title: (str) Optional. Track name
+    :param thumb: (Union[InputFile, str]) Thumbnail of the file sent. The thumbnail should be in JPEG format and less
+    than 200 kB in size. A thumbnail‘s width and height should not exceed 90. Ignored if the file is not uploaded using
+    multipart/form-data. Thumbnails can’t be reused and can be only uploaded as a new file, so you can pass
+    “attach://<file_attach_name>” if the thumbnail was uploaded using multipart/form-data under <file_attach_name>.
     :param disable_notification: (bool) Optional. Sends the message silently. Users will receive a notification with no
     sound.
     :param reply_to_message_id: (int) Optional. If the message is a reply, ID of the original message
@@ -232,6 +237,7 @@ class sendAudio(TelegramMethodBase):
                  duration: int = None,
                  performer: str = None,
                  title: str = None,
+                 thumb: Union[InputFile, str] = None,
                  disable_notification: bool = None,
                  reply_to_message_id: int = None,
                  reply_markup: Union[
@@ -245,6 +251,7 @@ class sendAudio(TelegramMethodBase):
         self.duration = duration
         self.performer = performer
         self.title = title
+        self.thumb = thumb
         self.disable_notification = disable_notification
         self.reply_to_message_id = reply_to_message_id
         self.reply_markup = reply_markup
@@ -258,7 +265,11 @@ class sendDocument(TelegramMethodBase):
     format @channelusername)
     :param document: (Union[InputFile, str]) File to send. Pass a file_id as String to send a file that exists on the
     Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a file from the Internet, or upload
-    a new one using multipart/form-data. More info on Sending Files »
+    a new one using multipart/form-data.
+    :param thumb: (Union[InputFile, str]) Thumbnail of the file sent. The thumbnail should be in JPEG format and less
+    than 200 kB in size. A thumbnail‘s width and height should not exceed 90. Ignored if the file is not uploaded using
+    multipart/form-data. Thumbnails can’t be reused and can be only uploaded as a new file, so you can pass
+    “attach://<file_attach_name>” if the thumbnail was uploaded using multipart/form-data under <file_attach_name>.
     :param caption: (str) Optional. Document caption (may also be used when resending documents by file_id), 0-200
     characters
     :param parse_mode: (str) Optional. Send Markdown or HTML, if you want Telegram apps to show bold, italic,
@@ -275,6 +286,7 @@ class sendDocument(TelegramMethodBase):
 
     def __init__(self, chat_id: Union[int, str],
                  document: Union[InputFile, str] = None,
+                 thumb: Union[InputFile, str] = None,
                  caption: str = None,
                  parse_mode: str = None,
                  disable_notification: bool = None,
@@ -285,6 +297,7 @@ class sendDocument(TelegramMethodBase):
 
         self.chat_id = chat_id
         self.document = document
+        self.thumb = thumb
         self.caption = caption
         self.parse_mode = parse_mode
         self.disable_notification = disable_notification
@@ -305,8 +318,13 @@ class sendVideo(TelegramMethodBase):
     :param duration: (int) Optional. Duration of sent video in seconds
     :param width: (int) Optional. Video width
     :param height: (int) Optional. Video height
+    :param thumb: (Union[InputFile, str]) Thumbnail of the file sent. The thumbnail should be in JPEG format and less
+    than 200 kB in size. A thumbnail‘s width and height should not exceed 90. Ignored if the file is not uploaded using
+    multipart/form-data. Thumbnails can’t be reused and can be only uploaded as a new file, so you can pass
+    “attach://<file_attach_name>” if the thumbnail was uploaded using multipart/form-data under <file_attach_name>.
     :param caption: (str) Optional. Video caption (may also be used when resending videos by file_id), 0-200 characters
-    :param parse_mode: (str) Optional. Send Markdown or HTML, if you want Telegram apps to show bold, italic, fixed-width text or inline URLs in the media caption.
+    :param parse_mode: (str) Optional. Send Markdown or HTML, if you want Telegram apps to show bold, italic,
+    fixed-width text or inline URLs in the media caption.
     :param supports_streaming: (bool) Optional. Pass True, if the uploaded video is suitable for streaming.
     :param disable_notification: (bool) Optional. Sends the message silently. Users will receive a notification with no
     sound.
@@ -323,6 +341,7 @@ class sendVideo(TelegramMethodBase):
                  duration: int = None,
                  width: int = None,
                  height: int = None,
+                 thumb: Union[InputFile, str] = None,
                  caption: str = None,
                  parse_mode: str = None,
                  supports_streaming: bool = None,
@@ -337,6 +356,66 @@ class sendVideo(TelegramMethodBase):
         self.duration = duration
         self.width = width
         self.height = height
+        self.thumb = thumb
+        self.caption = caption
+        self.parse_mode = parse_mode
+        self.supports_streaming = supports_streaming
+        self.disable_notification = disable_notification
+        self.reply_to_message_id = reply_to_message_id
+        self.reply_markup = reply_markup
+
+
+class sendAnimation(TelegramMethodBase):
+    """
+    Use this method to send animation files (GIF or H.264/MPEG-4 AVC video without sound). On success, the sent Message
+    is returned. Bots can currently send animation files of up to 50 MB in size, this limit may be changed in the future
+    :param chat_id: (Union[int, str]) Unique identifier for the target chat or username of the target channel (in the
+    format @channelusername)
+    :param animation: (Union[InputFile, str]) Animation to send. Pass a file_id as String to send an animation that
+    exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get an animation from the
+    Internet, or upload a new animation using multipart/form-data.
+    :param duration: (int) Optional. Duration of sent video in seconds
+    :param width: (int) Optional. Video width
+    :param height: (int) Optional. Video height
+    :param thumb: (Union[InputFile, str]) Thumbnail of the file sent. The thumbnail should be in JPEG format and less
+    than 200 kB in size. A thumbnail‘s width and height should not exceed 90. Ignored if the file is not uploaded using
+    multipart/form-data. Thumbnails can’t be reused and can be only uploaded as a new file, so you can pass
+    “attach://<file_attach_name>” if the thumbnail was uploaded using multipart/form-data under <file_attach_name>.
+    :param caption: (str) Optional. Animation caption (may also be used when resending videos by file_id), 0-200
+    characters
+    :param parse_mode: (str) Optional. Send Markdown or HTML, if you want Telegram apps to show bold, italic,
+    fixed-width text or inline URLs in the media caption.
+    :param disable_notification: (bool) Optional. Sends the message silently. Users will receive a notification with no
+    sound.
+    :param reply_to_message_id: (int) Optional. If the message is a reply, ID of the original message
+    :param reply_markup: (Union[InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply]) Optional.
+    Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions
+    to remove reply keyboard or to force a reply from the user.
+    """
+
+    ReturnType = Message
+
+    def __init__(self, chat_id: Union[int, str],
+                 animation: Union[InputFile, str] = None,
+                 duration: int = None,
+                 width: int = None,
+                 height: int = None,
+                 thumb: Union[InputFile, str] = None,
+                 caption: str = None,
+                 parse_mode: str = None,
+                 supports_streaming: bool = None,
+                 disable_notification: bool = None,
+                 reply_to_message_id: int = None,
+                 reply_markup: Union[
+                     InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply] = None):
+        super().__init__()
+
+        self.chat_id = chat_id
+        self.animation = animation
+        self.duration = duration
+        self.width = width
+        self.height = height
+        self.thumb = thumb
         self.caption = caption
         self.parse_mode = parse_mode
         self.supports_streaming = supports_streaming
@@ -402,6 +481,10 @@ class sendVideoNote(TelegramMethodBase):
     Files ». Sending video notes by a URL is currently unsupported
     :param duration: (int) Optional. Duration of sent video in seconds
     :param length: (int) Optional. Video width and height
+    :param thumb: (Union[InputFile, str]) Thumbnail of the file sent. The thumbnail should be in JPEG format and less
+    than 200 kB in size. A thumbnail‘s width and height should not exceed 90. Ignored if the file is not uploaded using
+    multipart/form-data. Thumbnails can’t be reused and can be only uploaded as a new file, so you can pass
+    “attach://<file_attach_name>” if the thumbnail was uploaded using multipart/form-data under <file_attach_name>.
     :param disable_notification: (bool) Optional. Sends the message silently. Users will receive a notification with no
     sound.
     :param reply_to_message_id: (int) Optional. If the message is a reply, ID of the original message
@@ -416,6 +499,7 @@ class sendVideoNote(TelegramMethodBase):
                  video_note: Union[InputFile, str] = None,
                  duration: int = None,
                  length: int = None,
+                 thumb: Union[InputFile, str] = None,
                  disable_notification: bool = None,
                  reply_to_message_id: int = None,
                  reply_markup: Union[
@@ -426,6 +510,7 @@ class sendVideoNote(TelegramMethodBase):
         self.video_note = video_note
         self.duration = duration
         self.length = length
+        self.thumb = thumb
         self.disable_notification = disable_notification
         self.reply_to_message_id = reply_to_message_id
         self.reply_markup = reply_markup
@@ -565,6 +650,8 @@ class sendVenue(TelegramMethodBase):
     :param title: (str) Name of the venue
     :param address: (str) Address of the venue
     :param foursquare_id: (str) Optional. Foursquare identifier of the venue
+    :param foursquare_type: (str) Optional. Foursquare type of the venue. (For example, “arts_entertainment/default”,
+    “arts_entertainment/aquarium” or “food/icecream”.)
     :param disable_notification: (bool) Optional. Sends the message silently. Users will receive a notification with no
     sound.
     :param reply_to_message_id: (int) Optional. If the message is a reply, ID of the original message
@@ -581,6 +668,7 @@ class sendVenue(TelegramMethodBase):
                  title: str,
                  address: str,
                  foursquare_id: str = None,
+                 foursquare_type: str = None,
                  disable_notification: bool = None,
                  reply_to_message_id: int = None,
                  reply_markup: Union[
@@ -593,6 +681,7 @@ class sendVenue(TelegramMethodBase):
         self.title = title
         self.address = address
         self.foursquare_id = foursquare_id
+        self.foursquare_type = foursquare_type
         self.disable_notification = disable_notification
         self.reply_to_message_id = reply_to_message_id
         self.reply_markup = reply_markup
@@ -606,6 +695,7 @@ class sendContact(TelegramMethodBase):
     :param phone_number: (str) Contact's phone number
     :param first_name: (str) Contact's first name
     :param last_name: (str) Optional. Contact's last name
+    :param vcard: (str) Optional. Additional data about the contact in the form of a vCard
     :param disable_notification: (bool) Optional. Sends the message silently. Users will receive a notification with no
     sound.
     :param reply_to_message_id: (int) Optional. If the message is a reply, ID of the original message
@@ -620,6 +710,7 @@ class sendContact(TelegramMethodBase):
                  phone_number: str,
                  first_name: str,
                  last_name: str = None,
+                 vcard: str = None,
                  disable_notification: bool = None,
                  reply_to_message_id: int = None,
                  reply_markup: Union[InlineKeyboardMarkup,
@@ -632,6 +723,7 @@ class sendContact(TelegramMethodBase):
         self.phone_number = phone_number
         self.first_name = first_name
         self.last_name = last_name
+        self.vcard = vcard
         self.disable_notification = disable_notification
         self.reply_to_message_id = reply_to_message_id
         self.reply_markup = reply_markup
@@ -1145,6 +1237,36 @@ class editMessageCaption(TelegramMethodBase):
         self.inline_message_id = inline_message_id
         self.caption = caption
         self.parse_mode = parse_mode
+        self.reply_markup = reply_markup
+
+
+class editMediaMessage(TelegramMethodBase):
+    """
+    Use this method to edit captions of messages sent by the bot or via the bot (for inline bots). On success, if edited
+    message is sent by the bot, the edited Message is returned, otherwise True is returned.
+
+    :param media: (InputMedia) A JSON-serialized object for a new media content of the message
+    :param chat_id: (Union[int, str]) Optional. Required if inline_message_id is not specified. Unique identifier for
+    the target chat or username of the target channel (in the format @channelusername)
+    :param message_id: (int) Optional. Required if inline_message_id is not specified. Identifier of the sent message
+    :param inline_message_id: (str) Optional. Required if chat_id and message_id are not specified. Identifier of the
+    inline message
+    :param reply_markup: (InlineKeyboardMarkup) Optional. A JSON-serialized object for an inline keyboard.
+    """
+
+    ReturnType = Union[Message, bool]
+
+    def __init__(self, media: InputMedia,
+                 chat_id: Union[int, str] = None,
+                 message_id: int = None,
+                 inline_message_id: str = None,
+                 reply_markup: InlineKeyboardMarkup = None):
+        super().__init__()
+
+        self.media = media
+        self.chat_id = chat_id
+        self.message_id = message_id
+        self.inline_message_id = inline_message_id
         self.reply_markup = reply_markup
 
 
